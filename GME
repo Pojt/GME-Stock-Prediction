@@ -19,9 +19,27 @@ from pandas_datareader import data as pdr
 yf.pdr_override()
 data = pdr.get_data_yahoo("GME", start="2020-02-01", end="2021-02-01")
 
+# Check the stationarity of the model
+from statsmodels.tsa.stattools import adfuller
+X=data["Close"].values
+result=adfuller(X)
+print('ADF Statistic: %f'% result[0])
+print('p-value: %f' % result[1])
+print('Critical Values:')
+for key, value in result[4].items():
+    print('t\%s: %.3f' % (key,value))
+if result[0] < result[4]["5%"]:
+ print("Reject H0 - Time Series is Stationary")
+else: print("Failed to Reject H0 - Time Series is Non-Stationary")
+
+# The Model is non-stationary, therefore take the first difference and try again
+
 # The first prediction model will ben an ARIMA model based on the number of lags
 # Import ARIMA model
 from statsmodels.tsa.arima.model import ARIMA
 
-
+# Find the number of lags in the model
+from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
+plot_acf(data.Close,lags=10)
+plot_pacf(data.Close)
 
